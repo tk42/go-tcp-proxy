@@ -15,7 +15,7 @@ Install latest release now with `curl https://i.jpillora.com/go-tcp-proxy! | bas
 **Source**
 
 ``` sh
-$ go get -v github.com/jpillora/go-tcp-proxy/cmd/tcp-proxy
+$ go get -v github.com/alunir/go-tcp-proxy/cmd/tcp-proxy
 ```
 
 ## Usage

@@ -8,7 +8,7 @@ import (
 	"regexp"
 	"strings"
 
-	proxy "github.com/jpillora/go-tcp-proxy"
+	proxy "github.com/alunir/go-tcp-proxy"
 )
 
 var (
@@ -17,8 +17,8 @@ var (
 	connid  = uint64(0)
 	logger  proxy.ColorLogger
 
-	localAddr   = flag.String("l", ":9999", "local address")
-	remoteAddr  = flag.String("r", "localhost:80", "remote address")
+	localAddr   = getAddrEnvWithDefault("PROXY_LOCAL_ADDR", *flag.String("l", ":9999", "local address"))
+	remoteAddr  = getAddrEnvWithDefault("PROXY_REMOTE_ADDR", *flag.String("r", "localhost:80", "remote address"))
 	verbose     = flag.Bool("v", false, "display server actions")
 	veryverbose = flag.Bool("vv", false, "display server actions and all tcp data")
 	nagles      = flag.Bool("n", false, "disable nagles algorithm")
@@ -28,6 +28,14 @@ var (
 	match       = flag.String("match", "", "match regex (in the form 'regex')")
 	replace     = flag.String("replace", "", "replace regex (in the form 'regex~replacer')")
 )
+
+func getAddrEnvWithDefault(env string, defaultStr string) string {
+	if v, ok := os.LookupEnv(env); !ok {
+		return defaultStr
+	} else {
+		return v
+	}
+}
 
 func main() {
 	flag.Parse()
