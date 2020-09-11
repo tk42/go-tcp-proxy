@@ -17,19 +17,20 @@ var (
 	connid  = uint64(0)
 	logger  proxy.ColorLogger
 
-	localAddr   = getAddrEnvWithDefault("PROXY_LOCAL_ADDR", flag.String("l", ":9999", "local address"))
-	remoteAddr  = getAddrEnvWithDefault("PROXY_REMOTE_ADDR", flag.String("r", "localhost:80", "remote address"))
-	verbose     = flag.Bool("v", false, "display server actions")
-	veryverbose = flag.Bool("vv", false, "display server actions and all tcp data")
-	nagles      = flag.Bool("n", false, "disable nagles algorithm")
-	hex         = flag.Bool("h", false, "output hex")
-	colors      = flag.Bool("c", false, "output ansi colors")
-	unwrapTLS   = flag.Bool("unwrap-tls", false, "remote connection with TLS exposed unencrypted locally")
-	match       = flag.String("match", "", "match regex (in the form 'regex')")
-	replace     = flag.String("replace", "", "replace regex (in the form 'regex~replacer')")
+	localAddr    = getStringEnvWithDefault("PROXY_LOCAL_ADDR", flag.String("l", ":9999", "local address"))
+	remoteAddr   = getStringEnvWithDefault("PROXY_REMOTE_ADDR", flag.String("r", "localhost:80", "remote address"))
+	filterDomain = getStringEnvWithDefault("PROXY_FILTER_DOMAIN", flag.String("d", "", "filtering by domain"))
+	verbose      = flag.Bool("v", false, "display server actions")
+	veryverbose  = flag.Bool("vv", false, "display server actions and all tcp data")
+	nagles       = flag.Bool("n", false, "disable nagles algorithm")
+	hex          = flag.Bool("h", false, "output hex")
+	colors       = flag.Bool("c", false, "output ansi colors")
+	unwrapTLS    = flag.Bool("unwrap-tls", false, "remote connection with TLS exposed unencrypted locally")
+	match        = flag.String("match", "", "match regex (in the form 'regex')")
+	replace      = flag.String("replace", "", "replace regex (in the form 'regex~replacer')")
 )
 
-func getAddrEnvWithDefault(env string, defaultStr *string) *string {
+func getStringEnvWithDefault(env string, defaultStr *string) *string {
 	if v, ok := os.LookupEnv(env); !ok {
 		return defaultStr
 	} else {
@@ -97,6 +98,7 @@ func main() {
 			Prefix:      fmt.Sprintf("Connection #%03d ", connid),
 			Color:       *colors,
 		}
+		p.FilterDomain = *filterDomain
 
 		go p.Start()
 	}
