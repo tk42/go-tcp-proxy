@@ -112,7 +112,7 @@ func createMatcher(match string) func(string) bool {
 		return nil
 	}
 
-	logger.Info("Matching %s", re.String())
+	logger.Info("createMatcher %s", re.String())
 	return func(input string) bool {
 		ms := re.FindAllString(input, -1)
 		for _, m := range ms {

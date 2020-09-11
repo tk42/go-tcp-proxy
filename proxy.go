@@ -132,9 +132,11 @@ func (p *Proxy) pipe(src, dst io.ReadWriter, incoming *net.TCPAddr) {
 
 		//execute match for filtering
 		if incoming != nil && p.Matcher != nil {
+			p.Log.Debug(incoming.IP.String())
 			hosts, err := net.LookupAddr(incoming.IP.String())
-			if err == nil {
-				p.Log.Debug(incoming.IP.String())
+			if err != nil {
+				p.Log.Info("Failed to look up the ip address %v", incoming.IP.String())
+				return
 			}
 			if len(hosts) != 1 {
 				p.Log.Info("Failed to read hosts %v", hosts)
