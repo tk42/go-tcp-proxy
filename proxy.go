@@ -84,8 +84,8 @@ func (p *Proxy) Start() {
 	p.Log.Info("Opened %s >>> %s", p.laddr.String(), p.raddr.String())
 
 	//bidirectional copy
-	go p.pipe(p.lconn, p.rconn, p.laddr)
-	go p.pipe(p.rconn, p.lconn, nil)
+	go p.pipe(p.lconn, p.rconn, true)
+	go p.pipe(p.rconn, p.lconn, false)
 
 	//wait for close...
 	<-p.errsig
@@ -103,7 +103,7 @@ func (p *Proxy) err(s string, err error) {
 	p.erred = true
 }
 
-func (p *Proxy) pipe(src, dst io.ReadWriter, incoming *net.TCPAddr) {
+func (p *Proxy) pipe(src, dst io.ReadWriter, incoming bool) {
 	islocal := src == p.lconn
 
 	var dataDirection string
@@ -131,11 +131,13 @@ func (p *Proxy) pipe(src, dst io.ReadWriter, incoming *net.TCPAddr) {
 		b := buff[:n]
 
 		//execute match for filtering
-		if incoming != nil && p.Matcher != nil {
-			p.Log.Debug(incoming.IP.String())
-			hosts, err := net.LookupAddr(incoming.IP.String())
+		if incoming && p.Matcher != nil {
+			local_ip := src.(*net.TCPConn).LocalAddr().String()
+			remote_ip := src.(*net.TCPConn).RemoteAddr().String()
+			p.Log.Debug("LocalAddr:%v -> RemoteAddr:%v", local_ip, remote_ip)
+			hosts, err := net.LookupAddr(local_ip)
 			if err != nil {
-				p.Log.Info("Failed to look up the ip address %v", incoming.IP.String())
+				p.Log.Info("Failed to look up %v", local_ip)
 				return
 			}
 			if len(hosts) != 1 {
