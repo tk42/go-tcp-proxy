@@ -17,17 +17,16 @@ var (
 	connid  = uint64(0)
 	logger  proxy.ColorLogger
 
-	localAddr    = getStringEnvWithDefault("PROXY_LOCAL_ADDR", flag.String("l", ":9999", "local address"))
-	remoteAddr   = getStringEnvWithDefault("PROXY_REMOTE_ADDR", flag.String("r", "localhost:80", "remote address"))
-	filterDomain = getStringEnvWithDefault("PROXY_FILTER_DOMAIN", flag.String("d", "", "filtering by domain"))
-	verbose      = flag.Bool("v", false, "display server actions")
-	veryverbose  = flag.Bool("vv", false, "display server actions and all tcp data")
-	nagles       = flag.Bool("n", false, "disable nagles algorithm")
-	hex          = flag.Bool("h", false, "output hex")
-	colors       = flag.Bool("c", false, "output ansi colors")
-	unwrapTLS    = flag.Bool("unwrap-tls", false, "remote connection with TLS exposed unencrypted locally")
-	match        = flag.String("match", "", "match regex (in the form 'regex')")
-	replace      = flag.String("replace", "", "replace regex (in the form 'regex~replacer')")
+	localAddr   = getStringEnvWithDefault("PROXY_LOCAL_ADDR", flag.String("l", ":9999", "local address"))
+	remoteAddr  = getStringEnvWithDefault("PROXY_REMOTE_ADDR", flag.String("r", "localhost:80", "remote address"))
+	match       = getStringEnvWithDefault("PROXY_FILTER_DOMAIN", flag.String("d", "", "filtering by domain (in the form 'regex')"))
+	verbose     = flag.Bool("v", false, "display server actions")
+	veryverbose = flag.Bool("vv", false, "display server actions and all tcp data")
+	nagles      = flag.Bool("n", false, "disable nagles algorithm")
+	hex         = flag.Bool("h", false, "output hex")
+	colors      = flag.Bool("c", false, "output ansi colors")
+	unwrapTLS   = flag.Bool("unwrap-tls", false, "remote connection with TLS exposed unencrypted locally")
+	replace     = flag.String("replace", "", "replace regex (in the form 'regex~replacer')")
 )
 
 func getStringEnvWithDefault(env string, defaultStr *string) *string {
@@ -98,13 +97,12 @@ func main() {
 			Prefix:      fmt.Sprintf("Connection #%03d ", connid),
 			Color:       *colors,
 		}
-		p.FilterDomain = *filterDomain
 
 		go p.Start()
 	}
 }
 
-func createMatcher(match string) func([]byte) {
+func createMatcher(match string) func(string) bool {
 	if match == "" {
 		return nil
 	}
@@ -115,12 +113,13 @@ func createMatcher(match string) func([]byte) {
 	}
 
 	logger.Info("Matching %s", re.String())
-	return func(input []byte) {
-		ms := re.FindAll(input, -1)
+	return func(input string) bool {
+		ms := re.FindAllString(input, -1)
 		for _, m := range ms {
 			matchid++
 			logger.Info("Match #%d: %s", matchid, string(m))
 		}
+		return len(ms) > 0
 	}
 }
 

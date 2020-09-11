@@ -17,9 +17,8 @@ type Proxy struct {
 	tlsUnwrapp    bool
 	tlsAddress    string
 
-	Matcher      func([]byte)
-	Replacer     func([]byte) []byte
-	FilterDomain string
+	Matcher  func(string) bool
+	Replacer func([]byte) []byte
 
 	// Settings
 	Nagles    bool
@@ -85,8 +84,8 @@ func (p *Proxy) Start() {
 	p.Log.Info("Opened %s >>> %s", p.laddr.String(), p.raddr.String())
 
 	//bidirectional copy
-	go p.pipe(p.lconn, p.rconn)
-	go p.pipe(p.rconn, p.lconn)
+	go p.pipe(p.lconn, p.rconn, p.laddr)
+	go p.pipe(p.rconn, p.lconn, nil)
 
 	//wait for close...
 	<-p.errsig
@@ -104,7 +103,7 @@ func (p *Proxy) err(s string, err error) {
 	p.erred = true
 }
 
-func (p *Proxy) pipe(src, dst io.ReadWriter) {
+func (p *Proxy) pipe(src, dst io.ReadWriter, incoming *net.TCPAddr) {
 	islocal := src == p.lconn
 
 	var dataDirection string
@@ -131,9 +130,20 @@ func (p *Proxy) pipe(src, dst io.ReadWriter) {
 		}
 		b := buff[:n]
 
-		//execute match
-		if p.Matcher != nil {
-			p.Matcher(b)
+		//execute match for filtering
+		if incoming != nil && p.Matcher != nil {
+			hosts, err := net.LookupAddr(incoming.IP.String())
+			if err == nil {
+				p.Log.Debug(incoming.IP.String())
+			}
+			if len(hosts) != 1 {
+				p.Log.Info("Failed to read hosts %v", hosts)
+				return
+			}
+			if !p.Matcher(hosts[0]) {
+				p.Log.Info("Filtered out the connection from %v", hosts[0])
+				return
+			}
 		}
 
 		//execute replace
