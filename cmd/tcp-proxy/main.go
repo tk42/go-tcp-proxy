@@ -17,8 +17,8 @@ var (
 	connid  = uint64(0)
 	logger  proxy.ColorLogger
 
-	localAddr   = getAddrEnvWithDefault("PROXY_LOCAL_ADDR", *flag.String("l", ":9999", "local address"))
-	remoteAddr  = getAddrEnvWithDefault("PROXY_REMOTE_ADDR", *flag.String("r", "localhost:80", "remote address"))
+	localAddr   = getAddrEnvWithDefault("PROXY_LOCAL_ADDR", flag.String("l", ":9999", "local address"))
+	remoteAddr  = getAddrEnvWithDefault("PROXY_REMOTE_ADDR", flag.String("r", "localhost:80", "remote address"))
 	verbose     = flag.Bool("v", false, "display server actions")
 	veryverbose = flag.Bool("vv", false, "display server actions and all tcp data")
 	nagles      = flag.Bool("n", false, "disable nagles algorithm")
@@ -29,11 +29,11 @@ var (
 	replace     = flag.String("replace", "", "replace regex (in the form 'regex~replacer')")
 )
 
-func getAddrEnvWithDefault(env string, defaultStr string) string {
+func getAddrEnvWithDefault(env string, defaultStr *string) *string {
 	if v, ok := os.LookupEnv(env); !ok {
 		return defaultStr
 	} else {
-		return v
+		return &v
 	}
 }
 
