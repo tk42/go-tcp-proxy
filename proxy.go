@@ -134,10 +134,11 @@ func (p *Proxy) pipe(src, dst io.ReadWriter, incoming bool) {
 		if incoming && p.Matcher != nil {
 			local_ip := src.(*net.TCPConn).LocalAddr().String()
 			remote_ip := src.(*net.TCPConn).RemoteAddr().String()
-			p.Log.Debug("LocalAddr:%v -> RemoteAddr:%v", local_ip, remote_ip)
-			hosts, err := net.LookupAddr(local_ip)
+			p.Log.Debug("SrcRemoteAddr:%v, SrcLocalAddr:%v", remote_ip, local_ip)
+			p.Log.Debug("DstRemoteAddr:%v, DstLocalAddr:%v", dst.(*net.TCPConn).RemoteAddr().String(), dst.(*net.TCPConn).LocalAddr().String())
+			hosts, err := net.LookupAddr(remote_ip)
 			if err != nil {
-				p.Log.Info("Failed to look up %v", local_ip)
+				p.Log.Info("Failed to look up %v", remote_ip)
 				return
 			}
 			if len(hosts) != 1 {
