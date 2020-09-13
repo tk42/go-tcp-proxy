@@ -135,19 +135,22 @@ func (p *Proxy) pipe(src, dst io.ReadWriter, incoming bool) {
 			local_ip := src.(*net.TCPConn).LocalAddr().String()
 			remote_ip := src.(*net.TCPConn).RemoteAddr().String()
 			p.Log.Debug("SrcRemoteAddr:%v, SrcLocalAddr:%v", remote_ip, local_ip)
-			p.Log.Debug("DstRemoteAddr:%v, DstLocalAddr:%v", dst.(*net.TCPConn).RemoteAddr().String(), dst.(*net.TCPConn).LocalAddr().String())
 			hosts, err := net.LookupAddr(remote_ip)
 			if err != nil {
-				p.Log.Info("Failed to look up %v", remote_ip)
-				return
-			}
-			if len(hosts) != 1 {
-				p.Log.Info("Failed to read hosts %v", hosts)
-				return
-			}
-			if !p.Matcher(hosts[0]) {
-				p.Log.Info("Filtered out the connection from %v", hosts[0])
-				return
+				p.Log.Info("Failed to look up %v as host", remote_ip)
+				if !p.Matcher(remote_ip) {
+					p.Log.Info("Failed to look up %v as IP", remote_ip)
+					return
+				}
+			} else {
+				if len(hosts) != 1 {
+					p.Log.Info("Failed to read hosts %v", hosts)
+					return
+				}
+				if !p.Matcher(hosts[0]) {
+					p.Log.Info("Filtered out the connection from %v", hosts[0])
+					return
+				}
 			}
 		}
 
