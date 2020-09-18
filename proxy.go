@@ -4,6 +4,7 @@ import (
 	"crypto/tls"
 	"io"
 	"net"
+	"strings"
 )
 
 // Proxy - Manages a Proxy connection, piping data between local and remote.
@@ -132,9 +133,10 @@ func (p *Proxy) pipe(src, dst io.ReadWriter, incoming bool) {
 
 		//execute match for filtering
 		if incoming && p.Matcher != nil {
-			local_ip := src.(*net.TCPConn).LocalAddr().String()
-			remote_ip := src.(*net.TCPConn).RemoteAddr().String()
-			p.Log.Debug("SrcRemoteAddr:%v, SrcLocalAddr:%v", remote_ip, local_ip)
+			local_addr := src.(*net.TCPConn).LocalAddr().String()
+			remote_addr := src.(*net.TCPConn).RemoteAddr().String()
+			p.Log.Debug("SrcRemoteAddr:%v, SrcLocalAddr:%v", remote_addr, local_addr)
+			remote_ip := strings.Split(remote_addr, ":")[0]
 			hosts, err := net.LookupAddr(remote_ip)
 			if err != nil {
 				p.Log.Info("Failed to look up %v as host", remote_ip)
