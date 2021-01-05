@@ -1,4 +1,4 @@
-module github.com/alunir/go-tcp-proxy
+module github.com/tk42/go-tcp-proxy
 
 go 1.13
 
