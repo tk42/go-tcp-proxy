@@ -1,5 +1,7 @@
 # tcp-proxy
 
+[![Docker Image CI](https://github.com/tk42/go-tcp-proxy/actions/workflows/action.yml/badge.svg)](https://github.com/tk42/go-tcp-proxy/actions/workflows/action.yml)
+
 A small TCP proxy written in Go forked from [jpillora/go-tcp-proxy](https://github.com/jpillora/go-tcp-proxy)
 
 ## Install
