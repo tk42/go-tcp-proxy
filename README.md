@@ -1,16 +1,15 @@
 # tcp-proxy
 
-A small TCP proxy written in Go
-
-This project was intended for debugging text-based protocols. The next version will address binary protocols.
+A small TCP proxy written in Go forked from [jpillora/go-tcp-proxy](https://github.com/jpillora/go-tcp-proxy)
 
 ## Install
 
-**Binaries**
+**Container**
 
-Download [the latest release](https://github.com/jpillora/go-tcp-proxy/releases/latest), or
-
-Install latest release now with `curl https://i.jpillora.com/go-tcp-proxy! | bash`
+pull the latest image from 
+```
+docker pull ghcr.io/tk42/go-tcp-proxy
+```
 
 **Source**
 
@@ -19,7 +18,27 @@ $ go get -v github.com/tk42/go-tcp-proxy/cmd/tcp-proxy
 ```
 
 ## Usage
+### Container
+This container can be used as the filtered proxy. So ```docker-compose.yml``` could be defined as follows
+```
+version: "3"
 
+services:
+  colab_proxy:
+    image: tk42/go-tcp-proxy
+    entrypoint: ["./tcp-proxy"]
+    environment:
+      - PROXY_LOCAL_ADDR=X.X.X.X:xxxx
+      - PROXY_REMOTE_ADDR=Y.Y.Y.Y:yyyy
+      - PROXY_FILTER_DOMAIN=bc.googleusercontent.com
+```
+In this case, connections from ```X.X.X.X:xxxx``` to ````Y.Y.Y.Y:yyyy```` could be passed if and only if its domain contains ```bc.googleusercontent.com```
+ + ```PROXY_LOCAL_ADDR```: The source address of the connection (X.X.X.X:xxxx)
+ + ```PROXY_REMOTE_ADDR```: The destination address of the connection  (Y.Y.Y.Y:yyyy)
+ + ```PROXY_FILTER_DOMAIN```: The domain that will be blocked
+
+
+### CLI
 ```
 $ tcp-proxy --help
 Usage of tcp-proxy:
