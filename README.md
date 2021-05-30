@@ -27,7 +27,7 @@ version: "3"
 
 services:
   colab_proxy:
-    image: tk42/go-tcp-proxy
+    image: ghcr.io/tk42/go-tcp-proxy
     entrypoint: ["./tcp-proxy"]
     environment:
       - PROXY_LOCAL_ADDR=X.X.X.X:xxxx
