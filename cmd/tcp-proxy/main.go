@@ -117,7 +117,7 @@ func createMatcher(match string) func(string) bool {
 		ms := re.FindAllString(input, -1)
 		for _, m := range ms {
 			matchid++
-			logger.Info("Match #%d: %s", matchid, string(m))
+			logger.Debug("Match #%d: %s", matchid, string(m))
 		}
 		return len(ms) > 0
 	}
