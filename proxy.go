@@ -35,12 +35,13 @@ type Proxy struct {
 // and closes it when finished.
 func New(lconn *net.TCPConn, laddr, raddr *net.TCPAddr) *Proxy {
 	return &Proxy{
-		lconn:  lconn,
-		laddr:  laddr,
-		raddr:  raddr,
-		erred:  false,
-		errsig: make(chan bool),
-		Log:    NullLogger{},
+		lconn:           lconn,
+		laddr:           laddr,
+		raddr:           raddr,
+		erred:           false,
+		errsig:          make(chan bool),
+		Log:             NullLogger{},
+		CacheRemoteAddr: mapset.NewSet(),
 	}
 }
 
