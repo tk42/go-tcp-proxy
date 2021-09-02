@@ -5,8 +5,7 @@ import (
 	"io"
 	"net"
 	"strings"
-
-	mapset "github.com/deckarep/golang-set"
+	"sync"
 )
 
 // Proxy - Manages a Proxy connection, piping data between local and remote.
@@ -23,7 +22,7 @@ type Proxy struct {
 	Matcher  func(string) bool
 	Replacer func([]byte) []byte
 
-	CacheRemoteAddr mapset.Set
+	CacheRemoteAddr sync.Map
 
 	// Settings
 	Nagles    bool
@@ -41,7 +40,7 @@ func New(lconn *net.TCPConn, laddr, raddr *net.TCPAddr) *Proxy {
 		erred:           false,
 		errsig:          make(chan bool),
 		Log:             NullLogger{},
-		CacheRemoteAddr: mapset.NewSet(),
+		CacheRemoteAddr: sync.Map{},
 	}
 }
 
@@ -142,7 +141,7 @@ func (p *Proxy) pipe(src, dst io.ReadWriter, incoming bool) {
 			remote_addr := src.(*net.TCPConn).RemoteAddr().String()
 			p.Log.Debug("SrcRemoteAddr:%v, SrcLocalAddr:%v", remote_addr, local_addr)
 
-			if !p.CacheRemoteAddr.Contains(remote_addr) {
+			if _, ok := p.CacheRemoteAddr.Load(remote_addr); !ok {
 				remote_ip := strings.Split(remote_addr, ":")[0]
 				hosts, err := net.LookupAddr(remote_ip)
 				if err != nil {
@@ -161,7 +160,8 @@ func (p *Proxy) pipe(src, dst io.ReadWriter, incoming bool) {
 						return
 					}
 				}
-				p.CacheRemoteAddr.Add(remote_addr)
+				p.CacheRemoteAddr.Store(remote_addr, struct{}{})
+				p.Log.Info("Successfully input to SrcRemoteAddr:%v. (SrcLocalAddr:%v)", remote_addr, local_addr)
 			}
 		}
 
