@@ -145,18 +145,18 @@ func (p *Proxy) pipe(src, dst io.ReadWriter, incoming bool) {
 				remote_ip := strings.Split(remote_addr, ":")[0]
 				hosts, err := net.LookupAddr(remote_ip)
 				if err != nil {
-					p.Log.Info("Failed to look up %v as host", remote_ip)
+					p.Log.Warn("Failed to look up %v as host. error:%v", remote_ip, err.Error())
 					if !p.Matcher(remote_ip) {
-						p.Log.Info("Failed to look up %v as IP", remote_ip)
+						p.Log.Warn("Failed to look up %v as IP", remote_ip)
 						return
 					}
 				} else {
 					if len(hosts) != 1 {
-						p.Log.Info("Failed to read hosts %v", hosts)
+						p.Log.Warn("Failed to read hosts %v", hosts)
 						return
 					}
 					if !p.Matcher(hosts[0]) {
-						p.Log.Info("Filtered out the connection from %v", hosts[0])
+						p.Log.Warn("Filtered out the connection from %v", hosts[0])
 						return
 					}
 				}
